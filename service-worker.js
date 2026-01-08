@@ -1,6 +1,6 @@
-const CACHE_NAME = "escape-game-v1";
+const CACHE_NAME = "escape-game-v2";
 const FILES_TO_CACHE = [
-  "gioco.html",
+  "index.html",
   "manifest.json",
   "icon-192.png",
   "icon-512.png"
