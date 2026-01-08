@@ -1,267 +1,119 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#000000">
-
-<script>
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('service-worker.js');
-}
-</script>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Il PataTesoro</title>
-
+<title>Escape Game</title>
+<link rel="manifest" href="manifest.json">
 <style>
-    body {
-        margin: 0;
-        font-family: Arial, sans-serif;
-        background: black;
-        color: white;
-        text-align: center;
-    }
-
-    .screen {
-        display: none;
-        min-height: 100vh;
-        padding: 20px;
-        box-sizing: border-box;
-    }
-
-    .active {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-    }
-
-    button {
-        width: 80%;
-        max-width: 300px;
-        padding: 15px;
-        margin: 10px 0;
-        font-size: 18px;
-        border: none;
-        border-radius: 8px;
-    }
-
-    .btn-red {
-        background: red;
-        color: white;
-    }
-
-    .btn-white {
-        background: white;
-        color: black;
-    }
-
-    .btn-green {
-        background: green;
-        color: black;
-    }
-
-    .pin-container {
-        display: flex;
-        justify-content: center;
-        gap: 10px;
-        margin: 20px 0;
-    }
-
-    .pin-container input {
-        width: 45px;
-        height: 55px;
-        font-size: 24px;
-        text-align: center;
-    }
-
-    .popup {
-        position: fixed;
-        inset: 0;
-        background: rgba(0,0,0,0.85);
-        display: none;
-        justify-content: center;
-        align-items: center;
-    }
-
-    .popup-content {
-        background: black;
-        border: 1px solid white;
-        padding: 20px;
-        width: 80%;
-        max-width: 300px;
-    }
-
-    .finale {
-        background: #7ecbff;
-        color: black;
-    }
+  body {
+    background-color: black;
+    font-family: Arial, sans-serif;
+    text-align: center;
+    color: white;
+    margin: 0;
+    padding: 0;
+  }
+  button {
+    display: block;
+    margin: 20px auto;
+    padding: 15px 30px;
+    font-size: 18px;
+    border: none;
+    cursor: pointer;
+  }
+  .rosso { background-color: red; color: white; }
+  .verde { background-color: green; color: black; }
+  .bianco { background-color: white; color: black; }
+  #schermata-finale { position: fixed; top:0; left:0; width:100%; height:100%; display:flex; flex-direction:column; justify-content:center; align-items:center; }
 </style>
 </head>
-
 <body>
 
-<!-- START -->
-<div id="startScreen" class="screen active">
-    <button class="btn-red" onclick="goToGame()">START</button>
-</div>
+<h1>Escape Game</h1>
 
-<!-- GAME -->
-<div id="gameScreen" class="screen">
-    <button id="cameraBtn" class="btn-red" onclick="openPin('CAMERA')">CAMERA</button>
-    <button id="sgabuzzinoBtn" class="btn-red" onclick="openPin('SGABUZZINO')">SGABUZZINO</button>
-    <button id="portaBtn" class="btn-white" onclick="portaSegreta()">PORTA SEGRETA 🔒</button>
-</div>
-
-<!-- PIN -->
-<div id="pinScreen" class="screen">
-    <h2 id="pinTitle"></h2>
-
-    <div class="pin-container">
-        <input maxlength="1" inputmode="numeric">
-        <input maxlength="1" inputmode="numeric">
-        <input maxlength="1" inputmode="numeric">
-        <input maxlength="1" inputmode="numeric">
-    </div>
-
-    <button class="btn-red" onclick="checkPin()">CONFERMA</button>
-    <button class="btn-white" onclick="backToGame()">INDIETRO</button>
-</div>
-
-<!-- POPUP -->
-<div id="popup" class="popup">
-    <div class="popup-content">
-        <p id="popupText"></p>
-        <button class="btn-red" onclick="closePopup()">OK</button>
-    </div>
-</div>
-
-<!-- FINALE -->
-<div id="finalScreen" class="screen finale">
-    <h1>È ORA<br>DI APRIRE<br>IL TUO REGALO</h1>
-    <p>CREDIT<br>Powered by Patato</p>
-</div>
+<button id="btnCamera" class="rosso" onclick="sbloccaCamera()">CAMERA</button>
+<button id="btnSgabuzzino" class="rosso" onclick="sbloccaSgabuzzino()">SGABUZZINO</button>
+<button id="btnPorta" class="bianco" onclick="sbloccaPorta()">PORTA SEGRETA 🔒</button>
 
 <script>
-    const pins = {
-        CAMERA: "4549",
-        SGABUZZINO: "5731",
-        PORTA: "9418"
-    };
+let cameraSbloccata = false;
+let sgabuzzinoSbloccato = false;
+let portaSbloccata = false;
 
-    let completed = {
-        CAMERA: false,
-        SGABUZZINO: false,
-        PORTA: false
-    };
-
-    let currentDoor = "";
-
-    function goToGame() {
-        showScreen("gameScreen");
+// Funzione per Camera
+function sbloccaCamera() {
+    if(cameraSbloccata) {
+        alert("Porta già aperta");
+        return;
     }
+    let pin = prompt("Inserisci PIN Camera:");
+    if(pin === "4549") {
+        alert("Porta Camera sbloccata con successo!");
+        cameraSbloccata = true;
+        document.getElementById("btnCamera").className = "verde";
+        document.getElementById("btnCamera").innerText = "CAMERA ✅";
+        // Porta Segreta diventa rosso
+        document.getElementById("btnPorta").className = "rosso";
+        document.getElementById("btnPorta").innerText = "PORTA SEGRETA - LETTO";
+    } else {
+        alert("PIN errato");
+    }
+}
 
-    function openPin(door) {
-        if (completed[door]) {
-            showPopup("Porta già aperta");
-            return;
+// Funzione per Sgabuzzino
+function sbloccaSgabuzzino() {
+    if(sgabuzzinoSbloccato) {
+        alert("Porta già aperta");
+        return;
+    }
+    let pin = prompt("Inserisci PIN Sgabuzzino:");
+    if(pin === "5731") {
+        alert("Porta Sgabuzzino sbloccata con successo!");
+        sgabuzzinoSbloccato = true;
+        document.getElementById("btnSgabuzzino").className = "verde";
+        document.getElementById("btnSgabuzzino").innerText = "SGABUZZINO ✅";
+    } else {
+        alert("PIN errato");
+    }
+}
+
+// Funzione per Porta Segreta
+function sbloccaPorta() {
+    if(!cameraSbloccata) {
+        alert("Devi prima sbloccare la Camera!");
+        return;
+    }
+    if(portaSbloccata) {
+        alert("Porta già aperta");
+        return;
+    }
+    let pin = prompt("Inserisci PIN Porta Segreta:");
+    if(pin === "9418") {
+        portaSbloccata = true;
+        document.getElementById("btnPorta").className = "verde";
+        document.getElementById("btnPorta").innerText = "PORTA SEGRETA - LETTO ✅";
+
+        // Sfondo finale azzurro
+        document.body.style.backgroundColor = "skyblue";
+
+        // Div finale
+        if(!document.getElementById("schermata-finale")) {
+            const finale = document.createElement("div");
+            finale.id = "schermata-finale";
+            finale.innerHTML = `
+                <h1 style="color:black; text-align:center; margin-top:0;">È ORA<br>DI APRIRE<br>IL TUO REGALO</h1>
+                <p style="color:black; text-align:center;">Powered by Patato</p>
+            `;
+            document.body.appendChild(finale);
         }
-        currentDoor = door;
-        document.getElementById("pinTitle").innerText = door;
-        clearInputs();
-        showScreen("pinScreen");
+
+        alert("Porta segreta sbloccata con successo!");
+    } else {
+        alert("PIN errato");
     }
-
-    function portaSegreta() {
-        if (!completed.CAMERA) {
-            showPopup("Porta non ancora scoperta");
-            return;
-        }
-        if (completed.PORTA) {
-            showPopup("Porta già aperta");
-            return;
-        }
-        document.getElementById("portaBtn").innerText = "PORTA SEGRETA - LETTO";
-        openPin("PORTA");
-    }
-
-    function checkPin() {
-        const inputs = document.querySelectorAll(".pin-container input");
-        let value = "";
-        inputs.forEach(i => value += i.value);
-
-        if (
-            (currentDoor === "CAMERA" && value === pins.CAMERA) ||
-            (currentDoor === "SGABUZZINO" && value === pins.SGABUZZINO) ||
-            (currentDoor === "PORTA" && value === pins.PORTA)
-        ) {
-            completed[currentDoor] = true;
-            updateButtons();
-            showPopup("Porta sbloccata con successo");
-        } else {
-            showPopup("PIN errato");
-        }
-    }
-
-    function updateButtons() {
-        if (completed.CAMERA) {
-            cameraBtn.className = "btn-green";
-        }
-        if (completed.SGABUZZINO) {
-            sgabuzzinoBtn.className = "btn-green";
-        }
-        if (completed.CAMERA) {
-            portaBtn.className = "btn-red";
-            portaBtn.innerText = "PORTA SEGRETA - LETTO";
-        }
-        if (completed.PORTA) {
-            showScreen("finalScreen");
-        }
-    }
-
-    function backToGame() {
-        showScreen("gameScreen");
-    }
-
-    function showPopup(text) {
-        popupText.innerText = text;
-        popup.style.display = "flex";
-    }
-
-    function closePopup() {
-        popup.style.display = "none";
-        showScreen("gameScreen");
-    }
-
-    function showScreen(id) {
-        document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
-        document.getElementById(id).classList.add("active");
-    }
-
-    function clearInputs() {
-        document.querySelectorAll(".pin-container input").forEach(i => i.value = "");
-    }
-</script>
-    <script>
-function portaSegretaSbloccata() {
-    // Cambia lo sfondo in azzurro
-    document.body.style.backgroundColor = "skyblue";
-
-    // Crea il messaggio finale
-    const finale = document.createElement("div");
-    finale.id = "schermata-finale";
-    finale.innerHTML = `
-        <h1 style="color:black; text-align:center; margin-top:30%;">È ORA<br>DI APRIRE<br>IL TUO REGALO</h1>
-        <p style="color:black; text-align:center;">Powered by Patato</p>
-    `;
-    document.body.appendChild(finale);
-
-    // Mostra popup sopra lo sfondo
-    alert("Porta sbloccata con successo!");
 }
 </script>
-
 
 </body>
 </html>
