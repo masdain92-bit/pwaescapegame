@@ -91,7 +91,7 @@ if ('serviceWorker' in navigator) {
         padding: 20px;
         width: 80%;
         max-width: 300px;
-        border-radius: 12px; /* angoli smussati popup */
+        border-radius: 12px;
     }
 
     .finale {
@@ -105,4 +105,148 @@ if ('serviceWorker' in navigator) {
 
 <!-- START -->
 <div id="startScreen" class="screen active">
-    <
+    <button class="btn-red" onclick="goToGame()">START</button>
+</div>
+
+<!-- GAME -->
+<div id="gameScreen" class="screen">
+    <button id="cameraBtn" class="btn-red" onclick="openPin('CAMERA')">CAMERA</button>
+    <button id="sgabuzzinoBtn" class="btn-red" onclick="openPin('SGABUZZINO')">SGABUZZINO</button>
+    <button id="portaBtn" class="btn-white" onclick="portaSegreta()">PORTA SEGRETA 🔒</button>
+</div>
+
+<!-- PIN -->
+<div id="pinScreen" class="screen">
+    <h2 id="pinTitle"></h2>
+
+    <div class="pin-container">
+        <input maxlength="1" inputmode="numeric">
+        <input maxlength="1" inputmode="numeric">
+        <input maxlength="1" inputmode="numeric">
+        <input maxlength="1" inputmode="numeric">
+    </div>
+
+    <button class="btn-red" onclick="checkPin()">CONFERMA</button>
+    <button class="btn-white" onclick="backToGame()">INDIETRO</button>
+</div>
+
+<!-- POPUP -->
+<div id="popup" class="popup">
+    <div class="popup-content">
+        <p id="popupText"></p>
+        <button class="btn-red" onclick="closePopup()">OK</button>
+    </div>
+</div>
+
+<!-- FINALE -->
+<div id="finalScreen" class="screen finale">
+    <h1>È ORA<br>DI APRIRE<br>IL TUO REGALO</h1>
+    <p>CREDIT<br>Powered by Patato</p>
+</div>
+
+<script>
+    const pins = {
+        CAMERA: "4549",
+        SGABUZZINO: "5731",
+        PORTA: "9418"
+    };
+
+    let completed = {
+        CAMERA: false,
+        SGABUZZINO: false,
+        PORTA: false
+    };
+
+    let currentDoor = "";
+
+    function goToGame() {
+        showScreen("gameScreen");
+    }
+
+    function openPin(door) {
+        if (completed[door]) {
+            showPopup("Porta già aperta");
+            return;
+        }
+        currentDoor = door;
+        document.getElementById("pinTitle").innerText = door;
+        clearInputs();
+        showScreen("pinScreen");
+    }
+
+    function portaSegreta() {
+        if (!completed.CAMERA) {
+            showPopup("Porta non ancora scoperta");
+            return;
+        }
+        if (completed.PORTA) {
+            showPopup("Porta già aperta");
+            return;
+        }
+        document.getElementById("portaBtn").innerText = "PORTA SEGRETA - LETTO";
+        openPin("PORTA");
+    }
+
+    function checkPin() {
+        const inputs = document.querySelectorAll(".pin-container input");
+        let value = "";
+        inputs.forEach(i => value += i.value);
+
+        if (
+            (currentDoor === "CAMERA" && value === pins.CAMERA) ||
+            (currentDoor === "SGABUZZINO" && value === pins.SGABUZZINO) ||
+            (currentDoor === "PORTA" && value === pins.PORTA)
+        ) {
+            completed[currentDoor] = true;
+            updateButtons();
+            showPopup("Porta sbloccata con successo");
+        } else {
+            showPopup("PIN errato");
+        }
+    }
+
+    function updateButtons() {
+        if (completed.CAMERA) {
+            cameraBtn.className = "btn-green";
+        }
+        if (completed.SGABUZZINO) {
+            sgabuzzinoBtn.className = "btn-green";
+        }
+        if (completed.CAMERA) {
+            portaBtn.className = "btn-red";
+            portaBtn.innerText = "PORTA SEGRETA - LETTO";
+        }
+        // rimuoviamo showScreen qui per non sovrascrivere la finale
+    }
+
+    function backToGame() {
+        showScreen("gameScreen");
+    }
+
+    function showPopup(text) {
+        popupText.innerText = text;
+        popup.style.display = "flex";
+    }
+
+    function closePopup() {
+        popup.style.display = "none";
+        // MODIFICA MINIMA: se la Porta Segreta è sbloccata, rimani sul finale
+        if (completed.PORTA) {
+            showScreen("finalScreen");
+        } else {
+            showScreen("gameScreen");
+        }
+    }
+
+    function showScreen(id) {
+        document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+        document.getElementById(id).classList.add("active");
+    }
+
+    function clearInputs() {
+        document.querySelectorAll(".pin-container input").forEach(i => i.value = "");
+    }
+</script>
+
+</body>
+</html>
