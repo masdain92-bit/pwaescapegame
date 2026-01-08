@@ -243,6 +243,25 @@ if ('serviceWorker' in navigator) {
         document.querySelectorAll(".pin-container input").forEach(i => i.value = "");
     }
 </script>
+    <script>
+function portaSegretaSbloccata() {
+    // Cambia lo sfondo in azzurro
+    document.body.style.backgroundColor = "skyblue";
+
+    // Crea il messaggio finale
+    const finale = document.createElement("div");
+    finale.id = "schermata-finale";
+    finale.innerHTML = `
+        <h1 style="color:black; text-align:center; margin-top:30%;">È ORA<br>DI APRIRE<br>IL TUO REGALO</h1>
+        <p style="color:black; text-align:center;">Powered by Patato</p>
+    `;
+    document.body.appendChild(finale);
+
+    // Mostra popup sopra lo sfondo
+    alert("Porta sbloccata con successo!");
+}
+</script>
+
 
 </body>
 </html>
